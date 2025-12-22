@@ -37,29 +37,57 @@ src/
     └── services/         # External services (Currency API)
 ```
 
-## 快速开始
+## 📚 文档
 
-1. 安装依赖:
+- **[快速开始指南](QUICKSTART.md)** - 3 分钟快速上手
+- **[完整配置指南](SETUP.md)** - 详细的部署和配置说明
+- **[数据库配置](docs/DATABASE_SETUP.md)** - 多种数据库方案选择
+
+## 🚀 快速开始
+
+### 方案 1: 使用 Docker (推荐)
+
 ```bash
+# 1. 安装依赖
 pnpm install
-```
 
-2. 配置环境变量:
-```bash
-cp .env.example .env
-# 编辑 .env 填入你的配置
-```
+# 2. 启动数据库 (需要 Docker)
+pnpm docker:up
 
-3. 初始化数据库:
-```bash
-pnpm db:generate
-pnpm db:push
-```
+# 3. 配置环境变量
+cp .env.local.example .env
+# 编辑 .env 填入 GitHub OAuth 配置
 
-4. 启动开发服务器:
-```bash
+# 4. 初始化数据库
+pnpm db:generate && pnpm db:push
+
+# 5. 启动开发服务器
 pnpm dev
 ```
+
+### 方案 2: 使用 Vercel Postgres
+
+```bash
+# 1. 安装依赖
+pnpm install
+
+# 2. 在 Vercel 创建 Postgres 数据库
+# 访问 https://vercel.com/dashboard
+
+# 3. 配置环境变量
+cp .env.example .env
+# 填入 DATABASE_URL 和其他配置
+
+# 4. 初始化数据库
+pnpm db:generate && pnpm db:push
+
+# 5. 启动开发服务器
+pnpm dev
+```
+
+访问: http://localhost:3000
+
+📖 详细步骤请查看 [QUICKSTART.md](QUICKSTART.md)
 
 ## 数据库设计
 
