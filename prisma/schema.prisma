@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表 - Auth.js 需要的基础表
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String        @id @default(cuid())
+  name          String?
+  email         String?       @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  transactions  Transaction[]
+  categories    Category[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// 交易类型枚举
+enum TransactionType {
+  INCOME  // 收入
+  EXPENSE // 支出
+}
+
+// 支持的币种
+enum Currency {
+  USD
+  JPY
+  CNY
+}
+
+// 交易分类表
+model Category {
+  id           String        @id @default(cuid())
+  name         String
+  type         TransactionType // 分类属于收入还是支出
+  color        String?       // UI 显示颜色 (hex)
+  icon         String?       // 图标名称
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([userId, name, type]) // 同一用户下同类型的分类名称不能重复
+}
+
+// 交易记录表 - 核心业务实体
+model Transaction {
+  id             String          @id @default(cuid())
+
+  // 原始交易信息
+  originalAmount Decimal         @db.Decimal(19, 4) // 原币种金额,精度到4位小数
+  currency       Currency        // 交易币种
+
+  // 汇率信息 (关键字段)
+  exchangeRate   Decimal         @db.Decimal(10, 6) // 对 CNY 的汇率,精度到6位小数
+  amountCNY      Decimal         @db.Decimal(19, 4) // 折算后的 CNY 金额 (用于统计)
+
+  // 交易元数据
+  type           TransactionType // 收入/支出
+  date           DateTime        @db.Date // 交易发生日期 (用于获取当日汇率)
+  description    String?         // 交易描述
+  notes          String?         @db.Text // 备注
+
+  // 关联关系
+  categoryId     String
+  category       Category        @relation(fields: [categoryId], references: [id])
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 审计字段
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([userId, date]) // 优化按用户和日期查询
+  @@index([userId, type, date]) // 优化收支统计查询
+}
+
+// 汇率缓存表 (可选,用于缓存历史汇率)
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date
+  fromCurrency Currency
+  toCurrency   Currency @default(CNY) // 默认都转换为 CNY
+  rate      Decimal  @db.Decimal(10, 6)
+  source    String?  // 汇率来源 API
+  createdAt DateTime @default(now())
+
+  @@unique([date, fromCurrency, toCurrency]) // 同一天同一币种对的汇率唯一
+  @@index([date, fromCurrency])
+}
