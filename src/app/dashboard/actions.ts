@@ -130,9 +130,10 @@ export async function getCategories() {
 }
 
 /**
- * 初始化默认分类 (首次使用)
+ * 获取或初始化分类 (首次使用时自动创建)
+ * 注意: 不使用 revalidatePath,因为这是在渲染时调用的
  */
-export async function initializeDefaultCategories() {
+export async function getOrInitializeCategories() {
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error('Unauthorized');
@@ -143,13 +144,23 @@ export async function initializeDefaultCategories() {
   // 检查是否已有分类
   const existing = await categoryRepo.findByUser(session.user.id);
   if (existing.length > 0) {
-    return existing;
+    return existing.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      type: cat.type,
+      color: cat.color,
+      icon: cat.icon,
+    }));
   }
 
-  // 创建默认分类
+  // 创建默认分类 (首次使用)
   const categories = await categoryRepo.createDefaultCategories(session.user.id);
 
-  revalidatePath('/dashboard');
-
-  return categories;
+  return categories.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    type: cat.type,
+    color: cat.color,
+    icon: cat.icon,
+  }));
 }

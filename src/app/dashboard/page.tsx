@@ -7,8 +7,7 @@ import MonthlyChart from './components/MonthlyChart';
 import {
   createTransaction,
   getMonthlyReport,
-  getCategories,
-  initializeDefaultCategories,
+  getOrInitializeCategories,
 } from './actions';
 
 /**
@@ -25,14 +24,8 @@ export default async function DashboardPage() {
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
 
-  // 获取分类列表
-  let categories = await getCategories();
-
-  // 如果没有分类,初始化默认分类
-  if (categories.length === 0) {
-    await initializeDefaultCategories();
-    categories = await getCategories();
-  }
+  // 获取分类列表 (如果不存在则自动创建默认分类)
+  const categories = await getOrInitializeCategories();
 
   // 获取月度报表
   const report = await getMonthlyReport(year, month);
