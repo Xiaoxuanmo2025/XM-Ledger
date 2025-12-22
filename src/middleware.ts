@@ -12,6 +12,24 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // 检查是否有 session cookie (Auth.js v4 会使用 `authjs.session-token`)
+  // 注意: `request.cookies.get()` 返回一个 Cookie 对象,需要读取 `.value`
+  const cookieCandidates = [
+    'authjs.session-token',
+    '__Secure-authjs.session-token', // 生产环境
+  ];
+
+  let sessionToken: string | undefined;
+  let foundCookieName: string | undefined;
+  for (const name of cookieCandidates) {
+    const value = request.cookies.get(name)?.value;
+    if (value) {
+      sessionToken = value;
+      foundCookieName = name;
+      break;
+    }
+  }
+
   // 允许访问认证相关路径
   if (
     pathname.startsWith('/auth') ||
@@ -21,11 +39,6 @@ export function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
-
-  // 检查是否有 session cookie (Auth.js 默认使用 next-auth.session-token)
-  const sessionToken =
-    request.cookies.get('next-auth.session-token') ||
-    request.cookies.get('__Secure-next-auth.session-token'); // 生产环境
 
   // 如果访问受保护路由且没有 session,重定向到登录
   if (pathname.startsWith('/dashboard') && !sessionToken) {
