@@ -32,6 +32,10 @@ export default function TransactionForm({ categories, onSubmit }: TransactionFor
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
+    // Save form element reference synchronously because React may release
+    // the synthetic event after an await, which would make e.currentTarget null.
+    const form = e.currentTarget;
+
     const data: TransactionFormData = {
       type,
       categoryId: formData.get('categoryId') as string,
@@ -40,15 +44,17 @@ export default function TransactionForm({ categories, onSubmit }: TransactionFor
       date: formData.get('date') as string,
       description: formData.get('description') as string || undefined,
       notes: formData.get('notes') as string || undefined,
-      exchangeRate: showExchangeRate
-        ? (formData.get('exchangeRate') as string)
-        : undefined,
+      exchangeRate: (() => {
+        if (!showExchangeRate) return undefined;
+        const v = (formData.get('exchangeRate') as string) ?? '';
+        const trimmed = v.trim();
+        return trimmed === '' ? undefined : trimmed;
+      })(),
     };
 
     try {
       await onSubmit(data);
-      // 重置表单
-      e.currentTarget.reset();
+      form.reset();
       setShowExchangeRate(false);
     } catch (error) {
       console.error('Failed to create transaction:', error);

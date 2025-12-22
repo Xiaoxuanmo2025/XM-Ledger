@@ -83,7 +83,16 @@ export class UpdateTransactionUseCase {
     }
 
     if (providedRate !== undefined) {
-      return new Decimal(providedRate);
+      // Treat empty string as not provided
+      if (typeof providedRate === 'string' && providedRate.trim() === '') {
+        // fallthrough to auto fetch
+      } else {
+        try {
+          return new Decimal(providedRate as any);
+        } catch (err) {
+          throw new InvalidTransactionError('提供的汇率无效');
+        }
+      }
     }
 
     // 尝试从缓存获取

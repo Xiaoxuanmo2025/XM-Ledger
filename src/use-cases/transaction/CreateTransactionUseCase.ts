@@ -103,9 +103,18 @@ export class CreateTransactionUseCase {
       return new Decimal(1);
     }
 
-    // 如果用户手动提供了汇率,直接使用
+    // 如果用户手动提供了汇率,进行校验后使用
     if (input.exchangeRate !== undefined) {
-      return new Decimal(input.exchangeRate);
+      // 处理空字符串或只包含空白的情况（认为未提供）
+      if (typeof input.exchangeRate === 'string' && input.exchangeRate.trim() === '') {
+        // 当用户在表单中留空时，我们不把空字符串当作有效汇率
+      } else {
+        try {
+          return new Decimal(input.exchangeRate as any);
+        } catch (err) {
+          throw new InvalidTransactionError('提供的汇率无效');
+        }
+      }
     }
 
     // 尝试从缓存获取
