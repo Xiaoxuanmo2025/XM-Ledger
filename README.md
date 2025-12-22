@@ -42,6 +42,7 @@ src/
 - **[快速开始指南](QUICKSTART.md)** - 3 分钟快速上手
 - **[完整配置指南](SETUP.md)** - 详细的部署和配置说明
 - **[数据库配置](docs/DATABASE_SETUP.md)** - 多种数据库方案选择
+- **[Vercel 部署指南](docs/VERCEL_DEPLOYMENT.md)** - 解决 Edge Function 大小限制
 
 ## 🚀 快速开始
 
