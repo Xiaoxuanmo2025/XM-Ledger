@@ -1,5 +1,5 @@
 import { Transaction } from '@/domain/entities';
-import { ITransactionRepository, TransactionFilters } from './ports';
+import { ITransactionRepository, TransactionFilters } from '../ports';
 
 /**
  * Get Transactions Use Case

@@ -13,7 +13,7 @@ import {
   ICategoryRepository,
   IExchangeRateRepository,
   ICurrencyExchangeService,
-} from './ports';
+} from '../ports';
 
 /**
  * Create Transaction Use Case

@@ -1,6 +1,6 @@
 import { Category, CreateCategoryInput, TransactionType } from '@/domain/entities';
 import { InvalidTransactionError, CategoryNotFoundError } from '@/domain/errors/DomainError';
-import { ICategoryRepository } from './ports';
+import { ICategoryRepository } from '../ports';
 
 /**
  * Manage Category Use Cases

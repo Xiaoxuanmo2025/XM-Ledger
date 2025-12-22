@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js';
 import { TransactionType, TransactionSummary, CategorySummary } from '@/domain/entities';
-import { ITransactionRepository } from './ports';
+import { ITransactionRepository } from '../ports';
 
 /**
  * Get Monthly Report Use Case

@@ -1,5 +1,5 @@
 import { InvalidTransactionError } from '@/domain/errors/DomainError';
-import { ITransactionRepository } from './ports';
+import { ITransactionRepository } from '../ports';
 
 /**
  * Delete Transaction Use Case
