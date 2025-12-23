@@ -3,8 +3,16 @@
 import { useState } from 'react';
 import { Currency, TransactionType } from '@/domain/entities';
 
+interface Category {
+  id: string;
+  name: string;
+  type: TransactionType;
+  parentId?: string | null;
+  children?: Category[];
+}
+
 interface TransactionFormProps {
-  categories: Array<{ id: string; name: string; type: TransactionType }>;
+  categories: Category[];
   onSubmit: (data: TransactionFormData) => Promise<void>;
 }
 
@@ -25,7 +33,10 @@ export default function TransactionForm({ categories, onSubmit }: TransactionFor
   const [showExchangeRate, setShowExchangeRate] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredCategories = categories.filter((cat) => cat.type === type);
+  // 获取当前类型的父分类
+  const parentCategories = categories.filter(
+    (cat) => cat.type === type && !cat.parentId
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -109,10 +120,17 @@ export default function TransactionForm({ categories, onSubmit }: TransactionFor
           </label>
           <select name="categoryId" required className="select">
             <option value="">请选择分类</option>
-            {filteredCategories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
+            {parentCategories.map((parent) => (
+              <optgroup key={parent.id} label={parent.name}>
+                {/* 父分类选项 */}
+                <option value={parent.id}>{parent.name}</option>
+                {/* 子分类选项 */}
+                {parent.children?.map((child) => (
+                  <option key={child.id} value={child.id}>
+                    {child.name}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>

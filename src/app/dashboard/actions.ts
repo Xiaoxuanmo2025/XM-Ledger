@@ -11,9 +11,11 @@ import {
 } from '@/infrastructure';
 import {
   CreateTransactionUseCase,
+  DeleteTransactionUseCase,
   GetMonthlyReportUseCase,
+  ManageCategoryUseCase,
 } from '@/use-cases';
-import { Currency, TransactionType } from '@/domain/entities';
+import { Currency, TransactionType, CreateCategoryInput } from '@/domain/entities';
 
 /**
  * Server Actions for Dashboard
@@ -150,6 +152,15 @@ export async function getOrInitializeCategories() {
       type: cat.type,
       color: cat.color,
       icon: cat.icon,
+      parentId: cat.parentId,
+      children: cat.children?.map((child) => ({
+        id: child.id,
+        name: child.name,
+        type: child.type,
+        color: child.color,
+        icon: child.icon,
+        parentId: child.parentId,
+      })),
     }));
   }
 
@@ -162,5 +173,77 @@ export async function getOrInitializeCategories() {
     type: cat.type,
     color: cat.color,
     icon: cat.icon,
+    parentId: cat.parentId,
+    children: cat.children?.map((child) => ({
+      id: child.id,
+      name: child.name,
+      type: child.type,
+      color: child.color,
+      icon: child.icon,
+      parentId: child.parentId,
+    })),
   }));
+}
+
+/**
+ * 创建分类
+ */
+export async function createCategory(data: Omit<CreateCategoryInput, 'userId'>) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized');
+  }
+
+  const categoryRepo = new PrismaCategoryRepository(prisma);
+  const useCase = new ManageCategoryUseCase(categoryRepo);
+
+  const category = await useCase.create({
+    ...data,
+    userId: session.user.id,
+  });
+
+  revalidatePath('/dashboard');
+
+  return {
+    id: category.id,
+    name: category.name,
+    type: category.type,
+    color: category.color,
+    icon: category.icon,
+    parentId: category.parentId,
+  };
+}
+
+/**
+ * 删除分类
+ */
+export async function deleteCategory(categoryId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized');
+  }
+
+  const categoryRepo = new PrismaCategoryRepository(prisma);
+  const useCase = new ManageCategoryUseCase(categoryRepo);
+
+  await useCase.delete(categoryId, session.user.id);
+
+  revalidatePath('/dashboard');
+}
+
+/**
+ * 删除交易
+ */
+export async function deleteTransaction(transactionId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized');
+  }
+
+  const transactionRepo = new PrismaTransactionRepository(prisma);
+  const useCase = new DeleteTransactionUseCase(transactionRepo);
+
+  await useCase.execute(transactionId, session.user.id);
+
+  revalidatePath('/dashboard');
 }

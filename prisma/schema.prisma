@@ -73,20 +73,28 @@ enum Currency {
   CNY
 }
 
-// 交易分类表
+// 交易分类表 - 支持两级分类 (父类-子类)
 model Category {
   id           String        @id @default(cuid())
   name         String
   type         TransactionType // 分类属于收入还是支出
   color        String?       // UI 显示颜色 (hex)
   icon         String?       // 图标名称
+
+  // 两级分类支持
+  parentId     String?       // 父分类ID (null表示这是一级分类)
+  parent       Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children     Category[]    @relation("CategoryHierarchy")
+
   userId       String
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
-  @@unique([userId, name, type]) // 同一用户下同类型的分类名称不能重复
+  @@unique([userId, name, type, parentId]) // 同一用户下同类型同父分类的名称不能重复
+  @@index([userId, type])
+  @@index([parentId])
 }
 
 // 交易记录表 - 核心业务实体
