@@ -301,3 +301,16 @@ export async function importTransactionsFromCSV(csvContent: string) {
 
   return result;
 }
+
+/**
+ * 获取有交易数据的月份列表
+ */
+export async function getAvailableMonths() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized');
+  }
+
+  const transactionRepo = new PrismaTransactionRepository(prisma);
+  return await transactionRepo.getAvailableMonths(session.user.id);
+}

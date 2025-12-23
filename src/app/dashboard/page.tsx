@@ -4,10 +4,12 @@ import TransactionForm, {
 } from './components/TransactionForm';
 import StatsCard from './components/StatsCard';
 import MonthlyChart from './components/MonthlyChart';
+import MonthSelector from './components/MonthSelector';
 import {
   createTransaction,
   getMonthlyReport,
   getOrInitializeCategories,
+  getAvailableMonths,
 } from './actions';
 
 /**
@@ -18,17 +20,25 @@ import {
  * 2. 收支构成饼图
  * 3. 新增交易表单
  */
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ year?: string; month?: string }>;
+}) {
   // 获取当前年月
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
+  const params = await searchParams;
+  const year = params.year ? parseInt(params.year) : now.getFullYear();
+  const month = params.month ? parseInt(params.month) : now.getMonth() + 1;
 
   // 获取分类列表 (如果不存在则自动创建默认分类)
   const categories = await getOrInitializeCategories();
 
   // 获取月度报表
   const report = await getMonthlyReport(year, month);
+
+  // 获取有数据的月份列表
+  const availableMonths = await getAvailableMonths();
 
   // Server Action 处理表单提交
   async function handleCreateTransaction(data: TransactionFormData) {
@@ -45,6 +55,13 @@ export default async function DashboardPage() {
         </h1>
         <p className="text-gray-600 mt-1">所有金额已按当日汇率统一转换为人民币 (CNY)</p>
       </div>
+
+      {/* 月份选择器 */}
+      <MonthSelector
+        currentYear={year}
+        currentMonth={month}
+        availableMonths={availableMonths}
+      />
 
       {/* 统计卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

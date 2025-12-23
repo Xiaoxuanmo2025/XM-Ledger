@@ -79,6 +79,12 @@ export interface ITransactionRepository {
     amount: number; // CNY
     count: number;
   }>>;
+
+  /**
+   * 获取用户所有有交易数据的月份列表
+   * @returns Array of { year, month } sorted by date descending (最新的在前)
+   */
+  getAvailableMonths(userId: string): Promise<Array<{ year: number; month: number }>>;
 }
 
 /**

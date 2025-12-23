@@ -259,4 +259,47 @@ export class PrismaTransactionRepository implements ITransactionRepository {
       count: r._count.id,
     }));
   }
+
+  async getAvailableMonths(userId: string): Promise<Array<{ year: number; month: number }>> {
+    // 查询所有交易的日期
+    const transactions = await this.prisma.transaction.findMany({
+      where: { userId },
+      select: { date: true },
+      orderBy: { date: 'desc' },
+    });
+
+    // 提取唯一的年月组合
+    const monthsSet = new Set<string>();
+    transactions.forEach((tx) => {
+      const year = tx.date.getFullYear();
+      const month = tx.date.getMonth() + 1;
+      monthsSet.add(`${year}-${month}`);
+    });
+
+    // 转换为数组并排序（最新的在前）
+    const months = Array.from(monthsSet)
+      .map((key) => {
+        const [year, month] = key.split('-').map(Number);
+        return { year, month };
+      })
+      .sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year;
+        return b.month - a.month;
+      });
+
+    // 确保当前月份在列表中（即使没有数据）
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    const hasCurrentMonth = months.some(
+      (m) => m.year === currentYear && m.month === currentMonth
+    );
+
+    if (!hasCurrentMonth) {
+      months.unshift({ year: currentYear, month: currentMonth });
+    }
+
+    return months;
+  }
 }
