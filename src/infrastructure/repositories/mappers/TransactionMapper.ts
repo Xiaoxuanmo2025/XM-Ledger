@@ -12,7 +12,7 @@ export class TransactionMapper {
   /**
    * Prisma 模型 -> Domain Entity
    */
-  static toDomain(prismaTransaction: PrismaTransaction): Transaction {
+  static toDomain(prismaTransaction: PrismaTransaction & { user?: { id: string; name: string | null; email: string | null } | null }): Transaction {
     return {
       id: prismaTransaction.id,
       originalAmount: new Decimal(prismaTransaction.originalAmount.toString()),
@@ -27,6 +27,13 @@ export class TransactionMapper {
       userId: prismaTransaction.userId,
       createdAt: prismaTransaction.createdAt,
       updatedAt: prismaTransaction.updatedAt,
+      user: prismaTransaction.user
+        ? {
+            id: prismaTransaction.user.id,
+            name: prismaTransaction.user.name ?? undefined,
+            email: prismaTransaction.user.email ?? undefined,
+          }
+        : undefined,
     };
   }
 

@@ -1,13 +1,17 @@
-import { ITransactionRepository, ICategoryRepository } from '../ports';
+import { ITransactionRepository, ICategoryRepository, IAuditLogRepository } from '../ports';
+import { AuditAction } from '@/domain/entities';
 import { CSVTransaction } from '@/infrastructure/utils/csvHelper';
 
 /**
  * Export Transactions Use Case
+ *
+ * 导出交易并记录审计日志
  */
 export class ExportTransactionsUseCase {
   constructor(
     private transactionRepo: ITransactionRepository,
-    private categoryRepo: ICategoryRepository
+    private categoryRepo: ICategoryRepository,
+    private auditLogRepo: IAuditLogRepository
   ) {}
 
   async execute(userId: string): Promise<CSVTransaction[]> {
@@ -49,6 +53,16 @@ export class ExportTransactionsUseCase {
         人民币金额: tx.amountCNY.toString(),
         备注: tx.notes || '',
       };
+    });
+
+    // 记录导出操作的审计日志
+    await this.auditLogRepo.create({
+      action: AuditAction.EXPORT_TRANSACTIONS,
+      userId,
+      details: {
+        transactionCount: transactions.length,
+        exportDate: new Date().toISOString(),
+      },
     });
 
     return csvData;

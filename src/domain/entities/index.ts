@@ -10,3 +10,4 @@ export * from './TransactionType';
 export * from './Category';
 export * from './Transaction';
 export * from './ExchangeRate';
+export * from './AuditLog';

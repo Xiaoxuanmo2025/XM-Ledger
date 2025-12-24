@@ -15,6 +15,11 @@ interface Transaction {
   category: {
     name: string;
   };
+  user?: {
+    id: string;
+    name?: string;
+    email?: string;
+  };
 }
 
 interface TransactionListProps {
@@ -144,6 +149,9 @@ export default function TransactionList({
                   <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
                     人民币金额
                   </th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                    所属用户
+                  </th>
                   <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">
                     操作
                   </th>
@@ -184,6 +192,22 @@ export default function TransactionList({
                       {parseFloat(tx.amountCNY).toLocaleString('zh-CN', {
                         minimumFractionDigits: 2,
                       })}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-600">
+                      {tx.user ? (
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-900">
+                            {tx.user.name || tx.user.email || '未知用户'}
+                          </span>
+                          {tx.user.name && tx.user.email && (
+                            <span className="text-xs text-gray-500">
+                              {tx.user.email}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 italic">未知用户</span>
+                      )}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <button

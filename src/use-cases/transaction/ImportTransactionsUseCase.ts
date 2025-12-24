@@ -1,6 +1,6 @@
 import { Decimal } from 'decimal.js';
-import { ITransactionRepository, ICategoryRepository, IExchangeRateRepository, ICurrencyExchangeService } from '../ports';
-import { Currency, TransactionType, CreateTransactionInput } from '@/domain/entities';
+import { ITransactionRepository, ICategoryRepository, IExchangeRateRepository, ICurrencyExchangeService, IAuditLogRepository } from '../ports';
+import { Currency, TransactionType, CreateTransactionInput, AuditAction } from '@/domain/entities';
 import { InvalidTransactionError } from '@/domain/errors/DomainError';
 import { CSVTransaction } from '@/infrastructure/utils/csvHelper';
 
@@ -12,13 +12,16 @@ export interface ImportResult {
 
 /**
  * Import Transactions Use Case
+ *
+ * 批量导入交易并记录审计日志
  */
 export class ImportTransactionsUseCase {
   constructor(
     private transactionRepo: ITransactionRepository,
     private categoryRepo: ICategoryRepository,
     private exchangeRateRepo: IExchangeRateRepository,
-    private currencyService: ICurrencyExchangeService
+    private currencyService: ICurrencyExchangeService,
+    private auditLogRepo: IAuditLogRepository
   ) {}
 
   async execute(userId: string, csvData: CSVTransaction[]): Promise<ImportResult> {
@@ -52,6 +55,18 @@ export class ImportTransactionsUseCase {
         });
       }
     }
+
+    // 记录导入操作的审计日志
+    await this.auditLogRepo.create({
+      action: AuditAction.IMPORT_TRANSACTIONS,
+      userId,
+      details: {
+        totalRows: csvData.length,
+        successCount: result.success,
+        failedCount: result.failed,
+        errorSummary: result.errors.map((e) => `行${e.row}: ${e.error}`).slice(0, 10), // 只记录前10个错误
+      },
+    });
 
     return result;
   }

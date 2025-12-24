@@ -45,6 +45,12 @@ export default async function DashboardLayout({
                 >
                   分类管理
                 </Link>
+                <Link
+                  href="/dashboard/audit"
+                  className="text-gray-700 hover:text-gray-900 font-medium"
+                >
+                  审计日志
+                </Link>
               </nav>
             </div>
 

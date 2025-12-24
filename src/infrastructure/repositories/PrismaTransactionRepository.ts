@@ -65,6 +65,15 @@ export class PrismaTransactionRepository implements ITransactionRepository {
             },
           }),
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
       orderBy: { date: 'desc' },
       take: filters?.limit,
       skip: filters?.offset,

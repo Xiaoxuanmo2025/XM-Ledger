@@ -7,3 +7,4 @@
 export * from './PrismaTransactionRepository';
 export * from './PrismaCategoryRepository';
 export * from './PrismaExchangeRateRepository';
+export * from './PrismaAuditLogRepository';

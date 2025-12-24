@@ -3,6 +3,7 @@ import {
   Transaction,
   CreateTransactionInput,
   Currency,
+  AuditAction,
 } from '@/domain/entities';
 import {
   InvalidTransactionError,
@@ -13,6 +14,7 @@ import {
   ICategoryRepository,
   IExchangeRateRepository,
   ICurrencyExchangeService,
+  IAuditLogRepository,
 } from '../ports';
 
 /**
@@ -27,13 +29,15 @@ import {
  *    - 如果缓存没有,调用外部 API 获取并缓存
  * 3. 计算 amountCNY = originalAmount * exchangeRate
  * 4. 创建交易记录
+ * 5. 记录审计日志
  */
 export class CreateTransactionUseCase {
   constructor(
     private transactionRepo: ITransactionRepository,
     private categoryRepo: ICategoryRepository,
     private exchangeRateRepo: IExchangeRateRepository,
-    private currencyService: ICurrencyExchangeService
+    private currencyService: ICurrencyExchangeService,
+    private auditLogRepo: IAuditLogRepository
   ) {}
 
   async execute(input: CreateTransactionInput): Promise<Transaction> {
@@ -43,15 +47,28 @@ export class CreateTransactionUseCase {
     // 2. 获取或计算汇率
     const exchangeRate = await this.getExchangeRate(input);
 
-    // 3. 计算 CNY 金额
-    const originalAmount = new Decimal(input.originalAmount);
-    const amountCNY = originalAmount.mul(exchangeRate);
-
-    // 4. 创建交易
+    // 3. 创建交易 (createdBy 字段会在 repository 中设置为 input.userId)
     const transaction = await this.transactionRepo.create({
       ...input,
-      originalAmount,
+      originalAmount: new Decimal(input.originalAmount),
       exchangeRate,
+    });
+
+    // 4. 记录审计日志
+    await this.auditLogRepo.create({
+      action: AuditAction.CREATE_TRANSACTION,
+      userId: input.userId,
+      entityType: 'Transaction',
+      entityId: transaction.id,
+      details: {
+        type: transaction.type,
+        amount: transaction.originalAmount.toString(),
+        currency: transaction.currency,
+        amountCNY: transaction.amountCNY.toString(),
+        categoryId: transaction.categoryId,
+        date: transaction.date.toISOString(),
+        description: transaction.description,
+      },
     });
 
     return transaction;

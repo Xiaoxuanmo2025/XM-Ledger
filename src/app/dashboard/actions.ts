@@ -7,6 +7,7 @@ import {
   PrismaTransactionRepository,
   PrismaCategoryRepository,
   PrismaExchangeRateRepository,
+  PrismaAuditLogRepository,
   createExchangeRateService,
 } from '@/infrastructure';
 import {
@@ -47,12 +48,14 @@ export async function createTransaction(data: {
   const categoryRepo = new PrismaCategoryRepository(prisma);
   const exchangeRateRepo = new PrismaExchangeRateRepository(prisma);
   const currencyService = createExchangeRateService();
+  const auditLogRepo = new PrismaAuditLogRepository(prisma);
 
   const useCase = new CreateTransactionUseCase(
     transactionRepo,
     categoryRepo,
     exchangeRateRepo,
-    currencyService
+    currencyService,
+    auditLogRepo
   );
 
   // 执行创建
@@ -244,7 +247,8 @@ export async function deleteTransaction(transactionId: string) {
   }
 
   const transactionRepo = new PrismaTransactionRepository(prisma);
-  const useCase = new DeleteTransactionUseCase(transactionRepo);
+  const auditLogRepo = new PrismaAuditLogRepository(prisma);
+  const useCase = new DeleteTransactionUseCase(transactionRepo, auditLogRepo);
 
   await useCase.execute(transactionId, session.user.id);
 
@@ -262,7 +266,8 @@ export async function exportTransactionsToCSV(): Promise<string> {
 
   const transactionRepo = new PrismaTransactionRepository(prisma);
   const categoryRepo = new PrismaCategoryRepository(prisma);
-  const useCase = new ExportTransactionsUseCase(transactionRepo, categoryRepo);
+  const auditLogRepo = new PrismaAuditLogRepository(prisma);
+  const useCase = new ExportTransactionsUseCase(transactionRepo, categoryRepo, auditLogRepo);
 
   const csvData = await useCase.execute(session.user.id);
   const csvContent = convertToCSV(csvData);
@@ -287,12 +292,14 @@ export async function importTransactionsFromCSV(csvContent: string) {
   const categoryRepo = new PrismaCategoryRepository(prisma);
   const exchangeRateRepo = new PrismaExchangeRateRepository(prisma);
   const currencyService = createExchangeRateService();
+  const auditLogRepo = new PrismaAuditLogRepository(prisma);
 
   const useCase = new ImportTransactionsUseCase(
     transactionRepo,
     categoryRepo,
     exchangeRateRepo,
-    currencyService
+    currencyService,
+    auditLogRepo
   );
 
   const result = await useCase.execute(session.user.id, csvData);
@@ -313,4 +320,33 @@ export async function getAvailableMonths() {
 
   const transactionRepo = new PrismaTransactionRepository(prisma);
   return await transactionRepo.getAvailableMonths(session.user.id);
+}
+
+/**
+ * 获取审计日志
+ */
+export async function getAuditLogs(filters?: { limit?: number }) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized');
+  }
+
+  const auditLogRepo = new PrismaAuditLogRepository(prisma);
+  const logs = await auditLogRepo.findByUser(session.user.id, {
+    limit: filters?.limit || 50,
+  });
+
+  // 转换为可序列化的格式
+  return logs.map((log) => ({
+    id: log.id,
+    action: log.action,
+    userId: log.userId,
+    entityType: log.entityType,
+    entityId: log.entityId,
+    details: log.details,
+    ipAddress: log.ipAddress,
+    userAgent: log.userAgent,
+    createdAt: log.createdAt.toISOString(),
+    user: log.user,
+  }));
 }

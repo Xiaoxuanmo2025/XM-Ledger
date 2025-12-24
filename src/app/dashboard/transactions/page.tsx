@@ -19,6 +19,13 @@ export default async function TransactionsPage() {
     },
     include: {
       category: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
     },
     orderBy: {
       date: 'desc',
@@ -38,6 +45,13 @@ export default async function TransactionsPage() {
     category: {
       name: tx.category.name,
     },
+    user: tx.user
+      ? {
+          id: tx.user.id,
+          name: tx.user.name ?? undefined,
+          email: tx.user.email ?? undefined,
+        }
+      : undefined,
   }));
 
   return <TransactionList initialTransactions={serializedTransactions} />;

@@ -9,3 +9,4 @@ export * from './ITransactionRepository';
 export * from './ICategoryRepository';
 export * from './IExchangeRateRepository';
 export * from './ICurrencyExchangeService';
+export * from './IAuditLogRepository';

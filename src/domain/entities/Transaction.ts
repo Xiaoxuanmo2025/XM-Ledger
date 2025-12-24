@@ -35,6 +35,13 @@ export interface Transaction {
   // 审计字段
   createdAt: Date;
   updatedAt: Date;
+
+  // 关联的用户信息 (可选,用于显示)
+  user?: {
+    id: string;
+    name?: string;
+    email?: string;
+  };
 }
 
 /**

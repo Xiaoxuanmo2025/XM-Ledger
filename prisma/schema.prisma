@@ -39,17 +39,18 @@ model Session {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String?
-  email         String?       @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  transactions  Transaction[]
-  categories    Category[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                   String        @id @default(cuid())
+  name                 String?
+  email                String?       @unique
+  emailVerified        DateTime?
+  image                String?
+  accounts             Account[]
+  sessions             Session[]
+  transactions         Transaction[] // 用户拥有的交易
+  categories           Category[]
+  auditLogs            AuditLog[]    // 用户的操作日志
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 }
 
 model VerificationToken {
@@ -141,4 +142,33 @@ model ExchangeRate {
 
   @@unique([date, fromCurrency, toCurrency]) // 同一天同一币种对的汇率唯一
   @@index([date, fromCurrency])
+}
+
+// 操作审计日志表 - 防止做假账
+enum AuditAction {
+  CREATE_TRANSACTION    // 创建交易
+  DELETE_TRANSACTION    // 删除交易
+  IMPORT_TRANSACTIONS   // 批量导入交易
+  EXPORT_TRANSACTIONS   // 导出交易
+}
+
+model AuditLog {
+  id              String      @id @default(cuid())
+  action          AuditAction // 操作类型
+  userId          String      // 操作人
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 操作详情
+  entityType      String?     // 操作的实体类型 (如 "Transaction")
+  entityId        String?     // 操作的实体ID
+  details         String?     @db.Text // JSON格式的详细信息 (如删除的交易内容、导入的行数等)
+
+  // 元数据
+  ipAddress       String?     // 操作者IP地址
+  userAgent       String?     @db.Text // 用户浏览器信息
+  createdAt       DateTime    @default(now())
+
+  @@index([userId, createdAt]) // 优化按用户和时间查询
+  @@index([action, createdAt]) // 优化按操作类型查询
+  @@index([entityType, entityId]) // 优化按实体查询
 }
