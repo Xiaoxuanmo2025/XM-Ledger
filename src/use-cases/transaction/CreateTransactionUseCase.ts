@@ -47,7 +47,7 @@ export class CreateTransactionUseCase {
     // 2. 获取或计算汇率
     const exchangeRate = await this.getExchangeRate(input);
 
-    // 3. 创建交易 (createdBy 字段会在 repository 中设置为 input.userId)
+    // 3. 创建交易
     const transaction = await this.transactionRepo.create({
       ...input,
       originalAmount: new Decimal(input.originalAmount),

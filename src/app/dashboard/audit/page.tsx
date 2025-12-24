@@ -119,9 +119,9 @@ export default async function AuditLogPage() {
                             <div className="text-xs text-gray-400">
                               原记录: {details.description || '无描述'}
                             </div>
-                            {details.createdBy && (
+                            {details.ownerId && (
                               <div className="text-xs text-gray-400">
-                                创建者: {details.createdBy}
+                                所属用户: {details.ownerId}
                               </div>
                             )}
                           </div>

@@ -39,7 +39,7 @@ export class DeleteTransactionUseCase {
         categoryId: transaction.categoryId,
         date: transaction.date.toISOString(),
         description: transaction.description,
-        createdBy: transaction.createdBy,
+        ownerId: transaction.userId, // 记录交易所属用户
         createdAt: transaction.createdAt.toISOString(),
       },
     });
