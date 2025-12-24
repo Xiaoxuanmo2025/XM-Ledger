@@ -49,10 +49,10 @@ export class ManageCategoryUseCase {
   }
 
   /**
-   * 获取用户的所有分类
+   * 获取所有分类
    */
-  async getByUser(userId: string, type?: TransactionType): Promise<Category[]> {
-    return this.categoryRepo.findByUser(userId, type);
+  async getAll(type?: TransactionType): Promise<Category[]> {
+    return this.categoryRepo.findAll(type);
   }
 
   /**

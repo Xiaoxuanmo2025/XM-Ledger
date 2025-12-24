@@ -15,11 +15,11 @@ export class ExportTransactionsUseCase {
   ) {}
 
   async execute(userId: string): Promise<CSVTransaction[]> {
-    // 获取用户的所有交易
-    const transactions = await this.transactionRepo.findByUser(userId);
+    // 获取所有交易
+    const transactions = await this.transactionRepo.findAll();
 
-    // 获取用户的所有分类（用于查找父分类）
-    const categories = await this.categoryRepo.findByUser(userId);
+    // 获取所有分类（用于查找父分类）
+    const categories = await this.categoryRepo.findAll();
     const categoryMap = new Map(categories.map((cat) => [cat.id, cat]));
 
     // 转换为 CSV 格式

@@ -23,20 +23,15 @@ export interface ITransactionRepository {
   findById(id: string): Promise<Transaction | null>;
 
   /**
-   * 查找用户的所有交易
-   * @param userId - 用户 ID
+   * 查找所有交易
    * @param filters - 可选的过滤条件
    */
-  findByUser(
-    userId: string,
-    filters?: TransactionFilters
-  ): Promise<Transaction[]>;
+  findAll(filters?: TransactionFilters): Promise<Transaction[]>;
 
   /**
-   * 查找用户在指定日期范围内的交易
+   * 查找指定日期范围内的交易
    */
   findByDateRange(
-    userId: string,
     startDate: Date,
     endDate: Date,
     type?: TransactionType
@@ -53,10 +48,9 @@ export interface ITransactionRepository {
   delete(id: string): Promise<void>;
 
   /**
-   * 统计用户在指定月份的收支总额 (CNY)
+   * 统计指定月份的收支总额 (CNY)
    */
   getSummaryByMonth(
-    userId: string,
     year: number,
     month: number
   ): Promise<{
@@ -69,7 +63,6 @@ export interface ITransactionRepository {
    * 按分类统计指定时间范围的支出/收入
    */
   getSummaryByCategory(
-    userId: string,
     startDate: Date,
     endDate: Date,
     type: TransactionType
@@ -81,10 +74,10 @@ export interface ITransactionRepository {
   }>>;
 
   /**
-   * 获取用户所有有交易数据的月份列表
+   * 获取所有有交易数据的月份列表
    * @returns Array of { year, month } sorted by date descending (最新的在前)
    */
-  getAvailableMonths(userId: string): Promise<Array<{ year: number; month: number }>>;
+  getAvailableMonths(): Promise<Array<{ year: number; month: number }>>;
 }
 
 /**

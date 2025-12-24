@@ -14,9 +14,6 @@ export default async function TransactionsPage() {
 
   // 获取最近的交易记录 (最多 50 条)
   const transactions = await prisma.transaction.findMany({
-    where: {
-      userId: session.user.id,
-    },
     include: {
       category: true,
       user: {

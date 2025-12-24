@@ -40,10 +40,9 @@ export class PrismaCategoryRepository implements ICategoryRepository {
     return category ? CategoryMapper.toDomain(category) : null;
   }
 
-  async findByUser(userId: string, type?: TransactionType): Promise<Category[]> {
+  async findAll(type?: TransactionType): Promise<Category[]> {
     const categories = await this.prisma.category.findMany({
       where: {
-        userId,
         ...(type && { type }),
       },
       include: {
@@ -58,10 +57,9 @@ export class PrismaCategoryRepository implements ICategoryRepository {
     return categories.map(CategoryMapper.toDomain);
   }
 
-  async findParentCategories(userId: string, type?: TransactionType): Promise<Category[]> {
+  async findParentCategories(type?: TransactionType): Promise<Category[]> {
     const categories = await this.prisma.category.findMany({
       where: {
-        userId,
         parentId: null,
         ...(type && { type }),
       },

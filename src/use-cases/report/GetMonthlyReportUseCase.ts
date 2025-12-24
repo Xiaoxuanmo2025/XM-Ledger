@@ -13,9 +13,9 @@ import { ITransactionRepository } from '../ports';
 export class GetMonthlyReportUseCase {
   constructor(private transactionRepo: ITransactionRepository) {}
 
-  async execute(userId: string, year: number, month: number): Promise<MonthlyReport> {
+  async execute(year: number, month: number): Promise<MonthlyReport> {
     // 1. 获取月度汇总数据
-    const summary = await this.transactionRepo.getSummaryByMonth(userId, year, month);
+    const summary = await this.transactionRepo.getSummaryByMonth(year, month);
 
     // 2. 计算日期范围
     const startDate = new Date(year, month - 1, 1);
@@ -24,13 +24,11 @@ export class GetMonthlyReportUseCase {
     // 3. 获取分类统计 (收入和支出分别统计)
     const [expenseByCategory, incomeByCategory] = await Promise.all([
       this.transactionRepo.getSummaryByCategory(
-        userId,
         startDate,
         endDate,
         TransactionType.EXPENSE
       ),
       this.transactionRepo.getSummaryByCategory(
-        userId,
         startDate,
         endDate,
         TransactionType.INCOME

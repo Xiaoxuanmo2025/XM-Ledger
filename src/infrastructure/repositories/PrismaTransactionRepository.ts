@@ -48,13 +48,9 @@ export class PrismaTransactionRepository implements ITransactionRepository {
     return transaction ? TransactionMapper.toDomain(transaction) : null;
   }
 
-  async findByUser(
-    userId: string,
-    filters?: TransactionFilters
-  ): Promise<Transaction[]> {
+  async findAll(filters?: TransactionFilters): Promise<Transaction[]> {
     const transactions = await this.prisma.transaction.findMany({
       where: {
-        userId,
         ...(filters?.type && { type: filters.type }),
         ...(filters?.categoryId && { categoryId: filters.categoryId }),
         ...(filters?.startDate &&
@@ -83,14 +79,12 @@ export class PrismaTransactionRepository implements ITransactionRepository {
   }
 
   async findByDateRange(
-    userId: string,
     startDate: Date,
     endDate: Date,
     type?: TransactionType
   ): Promise<Transaction[]> {
     const transactions = await this.prisma.transaction.findMany({
       where: {
-        userId,
         date: {
           gte: startDate,
           lte: endDate,
@@ -159,7 +153,6 @@ export class PrismaTransactionRepository implements ITransactionRepository {
   }
 
   async getSummaryByMonth(
-    userId: string,
     year: number,
     month: number
   ): Promise<{
@@ -173,7 +166,6 @@ export class PrismaTransactionRepository implements ITransactionRepository {
     const [incomeResult, expenseResult] = await Promise.all([
       this.prisma.transaction.aggregate({
         where: {
-          userId,
           type: TransactionType.INCOME,
           date: {
             gte: startDate,
@@ -186,7 +178,6 @@ export class PrismaTransactionRepository implements ITransactionRepository {
       }),
       this.prisma.transaction.aggregate({
         where: {
-          userId,
           type: TransactionType.EXPENSE,
           date: {
             gte: startDate,
@@ -215,7 +206,6 @@ export class PrismaTransactionRepository implements ITransactionRepository {
   }
 
   async getSummaryByCategory(
-    userId: string,
     startDate: Date,
     endDate: Date,
     type: TransactionType
@@ -230,7 +220,6 @@ export class PrismaTransactionRepository implements ITransactionRepository {
     const results = await this.prisma.transaction.groupBy({
       by: ['categoryId'],
       where: {
-        userId,
         type,
         date: {
           gte: startDate,
@@ -269,10 +258,9 @@ export class PrismaTransactionRepository implements ITransactionRepository {
     }));
   }
 
-  async getAvailableMonths(userId: string): Promise<Array<{ year: number; month: number }>> {
+  async getAvailableMonths(): Promise<Array<{ year: number; month: number }>> {
     // 查询所有交易的日期
     const transactions = await this.prisma.transaction.findMany({
-      where: { userId },
       select: { date: true },
       orderBy: { date: 'desc' },
     });

@@ -15,14 +15,14 @@ export interface ICategoryRepository {
   findById(id: string, includeChildren?: boolean): Promise<Category | null>;
 
   /**
-   * 查找用户的所有分类 (包含子分类)
+   * 查找所有分类 (包含子分类)
    */
-  findByUser(userId: string, type?: TransactionType): Promise<Category[]>;
+  findAll(type?: TransactionType): Promise<Category[]>;
 
   /**
-   * 查找用户的所有一级分类 (只返回父分类)
+   * 查找所有一级分类 (只返回父分类)
    */
-  findParentCategories(userId: string, type?: TransactionType): Promise<Category[]>;
+  findParentCategories(type?: TransactionType): Promise<Category[]>;
 
   /**
    * 查找某个父分类下的所有子分类

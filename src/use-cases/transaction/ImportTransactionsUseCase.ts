@@ -31,8 +31,8 @@ export class ImportTransactionsUseCase {
       errors: [],
     };
 
-    // 获取用户的所有分类
-    const categories = await this.categoryRepo.findByUser(userId);
+    // 获取所有分类
+    const categories = await this.categoryRepo.findAll();
     const categoryMap = new Map(categories.map((cat) => [cat.name, cat]));
 
     for (let i = 0; i < csvData.length; i++) {

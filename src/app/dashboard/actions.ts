@@ -86,7 +86,7 @@ export async function getMonthlyReport(year: number, month: number) {
   const transactionRepo = new PrismaTransactionRepository(prisma);
   const useCase = new GetMonthlyReportUseCase(transactionRepo);
 
-  const report = await useCase.execute(session.user.id, year, month);
+  const report = await useCase.execute(year, month);
 
   // 转换 Decimal 为数字 (用于 JSON 序列化)
   return {
@@ -116,7 +116,7 @@ export async function getMonthlyReport(year: number, month: number) {
 }
 
 /**
- * 获取用户的分类列表
+ * 获取分类列表
  */
 export async function getCategories() {
   const session = await auth();
@@ -126,7 +126,7 @@ export async function getCategories() {
 
   const categoryRepo = new PrismaCategoryRepository(prisma);
 
-  const categories = await categoryRepo.findByUser(session.user.id);
+  const categories = await categoryRepo.findAll();
 
   return categories.map((cat) => ({
     id: cat.id,
@@ -150,7 +150,7 @@ export async function getOrInitializeCategories() {
   const categoryRepo = new PrismaCategoryRepository(prisma);
 
   // 检查是否已有分类
-  const existing = await categoryRepo.findByUser(session.user.id);
+  const existing = await categoryRepo.findAll();
   if (existing.length > 0) {
     return existing.map((cat) => ({
       id: cat.id,
@@ -319,7 +319,7 @@ export async function getAvailableMonths() {
   }
 
   const transactionRepo = new PrismaTransactionRepository(prisma);
-  return await transactionRepo.getAvailableMonths(session.user.id);
+  return await transactionRepo.getAvailableMonths();
 }
 
 /**
