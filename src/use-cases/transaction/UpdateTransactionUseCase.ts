@@ -39,11 +39,6 @@ export class UpdateTransactionUseCase {
       throw new InvalidTransactionError('交易不存在');
     }
 
-    // 2. 验证权限
-    if (existing.userId !== userId) {
-      throw new InvalidTransactionError('无权修改此交易');
-    }
-
     // 3. 如果修改了金额、币种或日期,需要重新计算汇率
     const needsRecalculation =
       data.originalAmount !== undefined ||

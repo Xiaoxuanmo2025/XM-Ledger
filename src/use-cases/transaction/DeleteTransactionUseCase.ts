@@ -20,11 +20,6 @@ export class DeleteTransactionUseCase {
       throw new InvalidTransactionError('交易不存在');
     }
 
-    // 2. 验证权限
-    if (transaction.userId !== userId) {
-      throw new InvalidTransactionError('无权删除此交易');
-    }
-
     // 3. 记录审计日志（在删除前记录完整信息）
     await this.auditLogRepo.create({
       action: AuditAction.DELETE_TRANSACTION,
