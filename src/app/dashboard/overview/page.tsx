@@ -126,11 +126,6 @@ function MonthlyTrendChart({
 
   return (
     <div className="p-4 md:p-6">
-      {/* 调试信息 */}
-      <div className="text-xs text-gray-500 mb-2">
-        最大值: {maxValue.toFixed(2)}
-      </div>
-
       {/* 图表容器 - 在移动端可以横向滚动 */}
       <div className="overflow-x-auto md:overflow-x-visible -mx-4 px-4 md:mx-0 md:px-0">
         <div className="flex items-end justify-between gap-1 md:gap-2 h-64 min-w-[600px] md:min-w-0">

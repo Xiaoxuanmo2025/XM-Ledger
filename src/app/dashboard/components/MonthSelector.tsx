@@ -26,7 +26,7 @@ export default function MonthSelector({
     const params = new URLSearchParams(searchParams.toString());
     params.set('year', year.toString());
     params.set('month', month.toString());
-    router.push(`/dashboard?${params.toString()}`);
+    router.push(`/dashboard/monthly?${params.toString()}`);
   };
 
   const currentValue = `${currentYear}-${currentMonth}`;
