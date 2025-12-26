@@ -25,10 +25,9 @@ export class PrismaAuditLogRepository implements IAuditLogRepository {
     return AuditLogMapper.toDomain(auditLog);
   }
 
-  async findByUser(userId: string, filters?: AuditLogFilters): Promise<AuditLog[]> {
+  async findAll(filters?: AuditLogFilters): Promise<AuditLog[]> {
     const logs = await this.prisma.auditLog.findMany({
       where: {
-        userId,
         ...(filters?.startDate &&
           filters?.endDate && {
             createdAt: {

@@ -332,7 +332,7 @@ export async function getAuditLogs(filters?: { limit?: number }) {
   }
 
   const auditLogRepo = new PrismaAuditLogRepository(prisma);
-  const logs = await auditLogRepo.findByUser(session.user.id, {
+  const logs = await auditLogRepo.findAll({
     limit: filters?.limit || 50,
   });
 

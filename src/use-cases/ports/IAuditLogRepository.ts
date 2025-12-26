@@ -12,9 +12,9 @@ export interface IAuditLogRepository {
   create(input: CreateAuditLogInput): Promise<AuditLog>;
 
   /**
-   * 查找用户的所有审计日志
+   * 查找所有审计日志
    */
-  findByUser(userId: string, filters?: AuditLogFilters): Promise<AuditLog[]>;
+  findAll(filters?: AuditLogFilters): Promise<AuditLog[]>;
 
   /**
    * 查找特定实体的审计日志
