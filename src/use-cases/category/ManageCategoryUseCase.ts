@@ -104,10 +104,6 @@ export class ManageCategoryUseCase {
       throw new CategoryNotFoundError('分类不存在');
     }
 
-    if (category.userId !== userId) {
-      throw new InvalidTransactionError('无权删除此分类');
-    }
-
     // 检查是否有子分类
     if (category.children && category.children.length > 0) {
       throw new InvalidTransactionError('请先删除此分类下的所有子分类');
