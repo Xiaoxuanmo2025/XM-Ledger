@@ -99,6 +99,16 @@ export interface ITransactionRepository {
     amount: number;
     count: number;
   }>>;
+
+  /**
+   * 获取最近N个月的收入支出趋势数据
+   */
+  getMonthlyTrend(months: number): Promise<Array<{
+    year: number;
+    month: number;
+    income: number;
+    expense: number;
+  }>>;
 }
 
 /**

@@ -385,4 +385,84 @@ export class PrismaTransactionRepository implements ITransactionRepository {
       count: r._count.id,
     }));
   }
+
+  async getMonthlyTrend(months: number): Promise<Array<{
+    year: number;
+    month: number;
+    income: number;
+    expense: number;
+  }>> {
+    // 计算起始日期（从当前月份往前推N个月）
+    const now = new Date();
+    const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1);
+
+    // 获取所有交易数据
+    const transactions = await this.prisma.transaction.findMany({
+      where: {
+        date: {
+          gte: startDate,
+        },
+      },
+      select: {
+        date: true,
+        type: true,
+        amountCNY: true,
+      },
+      orderBy: {
+        date: 'asc',
+      },
+    });
+
+    // 按月份分组统计
+    const monthlyData = new Map<string, { income: number; expense: number }>();
+
+    // 初始化最近N个月的数据
+    for (let i = 0; i < months; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - months + 1 + i, 1);
+      const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+      monthlyData.set(key, { income: 0, expense: 0 });
+    }
+
+    // 填充实际数据
+    transactions.forEach((tx) => {
+      const year = tx.date.getFullYear();
+      const month = tx.date.getMonth() + 1;
+      const key = `${year}-${month}`;
+
+      const data = monthlyData.get(key);
+      if (data) {
+        const amount = parseFloat(tx.amountCNY.toString());
+        if (tx.type === TransactionType.INCOME) {
+          data.income += amount;
+        } else {
+          data.expense += amount;
+        }
+      }
+    });
+
+    // 转换为数组并排序
+    const result: Array<{
+      year: number;
+      month: number;
+      income: number;
+      expense: number;
+    }> = [];
+
+    for (let i = 0; i < months; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - months + 1 + i, 1);
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const key = `${year}-${month}`;
+      const data = monthlyData.get(key) || { income: 0, expense: 0 };
+
+      result.push({
+        year,
+        month,
+        income: data.income,
+        expense: data.expense,
+      });
+    }
+
+    return result;
+  }
 }

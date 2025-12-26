@@ -369,6 +369,26 @@ export async function getOverallSummary() {
 }
 
 /**
+ * 获取最近N个月的收入支出趋势数据
+ */
+export async function getMonthlyTrend(months: number = 12) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized');
+  }
+
+  const transactionRepo = new PrismaTransactionRepository(prisma);
+  const trendData = await transactionRepo.getMonthlyTrend(months);
+
+  // 格式化月份显示
+  return trendData.map((data) => ({
+    month: `${data.year}-${data.month.toString().padStart(2, '0')}`,
+    income: data.income,
+    expense: data.expense,
+  }));
+}
+
+/**
  * 获取审计日志
  */
 export async function getAuditLogs(filters?: { limit?: number }) {
