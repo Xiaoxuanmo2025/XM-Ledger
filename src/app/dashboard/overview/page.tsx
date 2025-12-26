@@ -124,10 +124,6 @@ function MonthlyTrendChart({
     1 // 至少为1，避免除以0
   );
 
-  // 调试：打印数据和maxValue
-  console.log('MonthlyTrendChart data:', data);
-  console.log('MonthlyTrendChart maxValue:', maxValue);
-
   return (
     <div className="p-4 md:p-6">
       {/* 调试信息 */}
@@ -136,8 +132,8 @@ function MonthlyTrendChart({
       </div>
 
       {/* 图表容器 - 在移动端可以横向滚动 */}
-      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-        <div className="flex items-end justify-between gap-1 md:gap-2 h-64 min-w-[600px]">
+      <div className="overflow-x-auto md:overflow-x-visible -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="flex items-end justify-between gap-1 md:gap-2 h-64 min-w-[600px] md:min-w-0">
           {data.map((item, index) => {
             // 计算百分比高度，如果有值则至少显示3%的高度
             const incomeHeight = item.income > 0
@@ -152,8 +148,8 @@ function MonthlyTrendChart({
 
             return (
               <div key={index} className="flex-1 flex flex-col items-center gap-2 min-w-[40px]">
-                {/* 柱子容器 */}
-                <div className="flex gap-0.5 md:gap-1 items-end h-full w-full">
+                {/* 柱子容器 - 固定高度 */}
+                <div className="flex gap-0.5 md:gap-1 items-end w-full" style={{ height: '240px' }}>
                   {/* 收入柱 */}
                   <div
                     className={`flex-1 rounded-t transition-all relative group ${
