@@ -323,6 +323,52 @@ export async function getAvailableMonths() {
 }
 
 /**
+ * 获取总体统计数据（所有时间）
+ */
+export async function getOverallSummary() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized');
+  }
+
+  const transactionRepo = new PrismaTransactionRepository(prisma);
+  const summary = await transactionRepo.getOverallSummary();
+
+  // 获取总体收支构成
+  const [expenseByCategory, incomeByCategory] = await Promise.all([
+    transactionRepo.getOverallSummaryByCategory(TransactionType.EXPENSE),
+    transactionRepo.getOverallSummaryByCategory(TransactionType.INCOME),
+  ]);
+
+  // 计算百分比
+  const expenseSummaries = expenseByCategory.map((cat) => ({
+    categoryId: cat.categoryId,
+    categoryName: cat.categoryName,
+    amount: cat.amount,
+    percentage: summary.totalExpense > 0 ? (cat.amount / summary.totalExpense) * 100 : 0,
+    count: cat.count,
+  }));
+
+  const incomeSummaries = incomeByCategory.map((cat) => ({
+    categoryId: cat.categoryId,
+    categoryName: cat.categoryName,
+    amount: cat.amount,
+    percentage: summary.totalIncome > 0 ? (cat.amount / summary.totalIncome) * 100 : 0,
+    count: cat.count,
+  }));
+
+  return {
+    summary: {
+      totalIncome: summary.totalIncome,
+      totalExpense: summary.totalExpense,
+      balance: summary.balance,
+    },
+    expenseByCategory: expenseSummaries,
+    incomeByCategory: incomeSummaries,
+  };
+}
+
+/**
  * 获取审计日志
  */
 export async function getAuditLogs(filters?: { limit?: number }) {

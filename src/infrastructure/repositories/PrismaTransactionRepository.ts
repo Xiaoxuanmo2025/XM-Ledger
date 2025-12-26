@@ -299,4 +299,90 @@ export class PrismaTransactionRepository implements ITransactionRepository {
 
     return months;
   }
+
+  async getOverallSummary(): Promise<{
+    totalIncome: number;
+    totalExpense: number;
+    balance: number;
+  }> {
+    const [incomeResult, expenseResult] = await Promise.all([
+      this.prisma.transaction.aggregate({
+        where: {
+          type: TransactionType.INCOME,
+        },
+        _sum: {
+          amountCNY: true,
+        },
+      }),
+      this.prisma.transaction.aggregate({
+        where: {
+          type: TransactionType.EXPENSE,
+        },
+        _sum: {
+          amountCNY: true,
+        },
+      }),
+    ]);
+
+    const totalIncome = incomeResult._sum.amountCNY
+      ? parseFloat(incomeResult._sum.amountCNY.toString())
+      : 0;
+
+    const totalExpense = expenseResult._sum.amountCNY
+      ? parseFloat(expenseResult._sum.amountCNY.toString())
+      : 0;
+
+    return {
+      totalIncome,
+      totalExpense,
+      balance: totalIncome - totalExpense,
+    };
+  }
+
+  async getOverallSummaryByCategory(
+    type: TransactionType
+  ): Promise<
+    Array<{
+      categoryId: string;
+      categoryName: string;
+      amount: number;
+      count: number;
+    }>
+  > {
+    const results = await this.prisma.transaction.groupBy({
+      by: ['categoryId'],
+      where: {
+        type,
+      },
+      _sum: {
+        amountCNY: true,
+      },
+      _count: {
+        id: true,
+      },
+    });
+
+    // 获取分类名称
+    const categoryIds = results.map((r) => r.categoryId);
+    const categories = await this.prisma.category.findMany({
+      where: {
+        id: {
+          in: categoryIds,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
+
+    return results.map((r) => ({
+      categoryId: r.categoryId,
+      categoryName: categoryMap.get(r.categoryId) ?? 'Unknown',
+      amount: r._sum.amountCNY ? parseFloat(r._sum.amountCNY.toString()) : 0,
+      count: r._count.id,
+    }));
+  }
 }

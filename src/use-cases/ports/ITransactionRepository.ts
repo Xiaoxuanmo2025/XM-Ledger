@@ -78,6 +78,27 @@ export interface ITransactionRepository {
    * @returns Array of { year, month } sorted by date descending (最新的在前)
    */
   getAvailableMonths(): Promise<Array<{ year: number; month: number }>>;
+
+  /**
+   * 获取所有时间的总体统计数据 (CNY)
+   */
+  getOverallSummary(): Promise<{
+    totalIncome: number;
+    totalExpense: number;
+    balance: number;
+  }>;
+
+  /**
+   * 获取所有时间的分类统计（用于总体构成图表）
+   */
+  getOverallSummaryByCategory(
+    type: TransactionType
+  ): Promise<Array<{
+    categoryId: string;
+    categoryName: string;
+    amount: number;
+    count: number;
+  }>>;
 }
 
 /**
