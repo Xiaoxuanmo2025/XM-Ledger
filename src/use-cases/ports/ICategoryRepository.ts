@@ -30,10 +30,10 @@ export interface ICategoryRepository {
   findChildCategories(parentId: string): Promise<Category[]>;
 
   /**
-   * 检查分类名称是否已存在 (同一用户,同一类型,同一父分类下)
+   * 检查分类名称是否已存在 (全局,同一类型,同一父分类下)
+   * 在共享数据模型下，检查是否有重名分类（不限用户）
    */
   existsByName(
-    userId: string,
     name: string,
     type: TransactionType,
     parentId?: string | null

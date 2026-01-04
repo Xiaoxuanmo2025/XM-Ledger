@@ -84,14 +84,13 @@ export class PrismaCategoryRepository implements ICategoryRepository {
   }
 
   async existsByName(
-    userId: string,
     name: string,
     type: TransactionType,
     parentId?: string | null
   ): Promise<boolean> {
     const category = await this.prisma.category.findFirst({
       where: {
-        userId,
+        // 在共享数据模型下，全局检查重名（不限用户）
         name,
         type,
         parentId: parentId === undefined ? undefined : parentId,

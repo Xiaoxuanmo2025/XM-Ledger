@@ -97,10 +97,7 @@ export class CreateTransactionUseCase {
       );
     }
 
-    // 验证分类是否属于该用户
-    if (category.userId !== input.userId) {
-      throw new InvalidTransactionError('无权使用此分类');
-    }
+    // 在共享数据模型下，所有用户都可以使用所有分类
   }
 
   /**

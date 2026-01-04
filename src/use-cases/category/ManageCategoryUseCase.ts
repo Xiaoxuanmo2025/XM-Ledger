@@ -20,9 +20,7 @@ export class ManageCategoryUseCase {
       if (!parent) {
         throw new CategoryNotFoundError('父分类不存在');
       }
-      if (parent.userId !== input.userId) {
-        throw new InvalidTransactionError('无权使用此父分类');
-      }
+      // 在共享数据模型下，所有用户都可以使用所有分类
       if (parent.type !== input.type) {
         throw new InvalidTransactionError('父分类和子分类的类型必须一致');
       }
@@ -31,9 +29,8 @@ export class ManageCategoryUseCase {
       }
     }
 
-    // 检查名称是否已存在 (同一用户,同一类型,同一父分类下)
+    // 检查名称是否已存在 (全局,同一类型,同一父分类下)
     const exists = await this.categoryRepo.existsByName(
-      input.userId,
       input.name,
       input.type,
       input.parentId
@@ -75,14 +72,11 @@ export class ManageCategoryUseCase {
       throw new CategoryNotFoundError('分类不存在');
     }
 
-    if (category.userId !== userId) {
-      throw new InvalidTransactionError('无权修改此分类');
-    }
+    // 在共享数据模型下，所有用户都可以修改所有分类
 
-    // 如果修改了名称,检查是否重名
+    // 如果修改了名称,检查是否重名（全局检查）
     if (data.name && data.name !== category.name) {
       const exists = await this.categoryRepo.existsByName(
-        userId,
         data.name,
         category.type
       );
